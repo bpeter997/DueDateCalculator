@@ -1,11 +1,12 @@
-export class DueDateCalculator {
+export default class DueDateCalculator {
 
     private static _firstWorkingHour: number = 9;
     private static _lastWorkingHour: number = 17;
     private static _workingHoursPerDay: number = 8
 
-    public calculateDueDate(startDate: Date, turnaroundTimeinHours: number): Date {
-
+    public calculateDueDate(startDate: Date, turnaroundTimeinHours: number): string {
+        startDate = this.convertDateToLocalTimeZone(startDate);
+        
         this.validateStartDate(startDate);
         this.validateTurnaroundTime(turnaroundTimeinHours);
         
@@ -13,14 +14,17 @@ export class DueDateCalculator {
         const workingHoursOfWorkByTurnAroundTime: number = turnaroundTimeinHours % DueDateCalculator._workingHoursPerDay;
 
         let finishDate: Date = this.increaseDays(startDate, workingDaysOfWorkByTurnAroundTime);        
-
-        const localTimeDifferenceFromUtc: number = finishDate.getTimezoneOffset() / 60;
                 
-        finishDate = this.increaseHours(finishDate, workingHoursOfWorkByTurnAroundTime - localTimeDifferenceFromUtc);
+        finishDate = this.increaseHours(finishDate, workingHoursOfWorkByTurnAroundTime);
 
         if(this.isOutOfWorkingHours(finishDate)) finishDate = this.increaseHours(finishDate, 16)
         
-        return finishDate;
+        return this.getResultTimeString(finishDate.toUTCString());
+    }
+
+    private convertDateToLocalTimeZone(date: Date): Date {
+        const localTimeDifferenceFromUtc: number = date.getTimezoneOffset() / 60;        
+        return this.increaseHours(date, -localTimeDifferenceFromUtc);
     }
 
     private increaseDays(date: Date, numberOfDays: number): Date {
@@ -33,7 +37,6 @@ export class DueDateCalculator {
     }
 
     private increaseHours(date: Date, numberOfHours: number): Date {
-        
         let increasedDate: Date = new Date(date.setUTCHours(date.getUTCHours() + numberOfHours));
         while (this.isDateWeekend(increasedDate)) {
             increasedDate = new Date(increasedDate.setUTCDate(increasedDate.getUTCDate() + 1));
@@ -57,8 +60,12 @@ export class DueDateCalculator {
     }
 
     private isOutOfWorkingHours(date: Date): boolean {
-        const actualDateHour: number = date.getUTCHours();
+        const actualDateHour: number = date.getUTCHours();        
         return actualDateHour < DueDateCalculator._firstWorkingHour || actualDateHour >= DueDateCalculator._lastWorkingHour;
+    }
+
+    public getResultTimeString(finishDateString: string): string {
+        return finishDateString.slice(5, 25);
     }
 
 
