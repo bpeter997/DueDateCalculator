@@ -1,0 +1,14 @@
+{
+  "name": "calc_due_date",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/App.js",
+  "scripts": {
+    "start": "tsc && node ./dist/App.js"
+  },
+  "author": "Bodnar Peter",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^15.12.5"
+  }
+}
